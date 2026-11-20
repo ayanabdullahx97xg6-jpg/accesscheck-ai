@@ -39,45 +39,51 @@ export default async function handler(req, res) {
     return res.status(413).json({ error: "Please keep the text under 15,000 characters." });
   }
 
-  try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-3.8-flash",
-      generationConfig: {
-        temperature: 0.25
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const modelsToTry = ["gemini-2.0-flash", "gemini-3.8-flash", "gemini-2.0-flash-lite"];
+  let lastError = null;
+
+  for (const modelName of modelsToTry) {
+    try {
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.25
+        }
+      });
+
+      const result = await model.generateContent([
+        SYSTEM_PROMPT,
+        "\n\nTransform this user-provided text:\n",
+        text
+      ]);
+
+      const raw = result.response.text();
+      const cleanedRaw = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/, "").trim();
+      const parsed = JSON.parse(cleanedRaw);
+
+      const score = Number(parsed.readabilityScore);
+      if (!Number.isInteger(score) || score < 1 || score > 10 ||
+          typeof parsed.dyslexiaFriendly !== "string" ||
+          typeof parsed.screenReaderScript !== "string" ||
+          typeof parsed.scoreExplanation !== "string") {
+        throw new Error("Unexpected response format.");
       }
-    });
 
-    const result = await model.generateContent([
-      SYSTEM_PROMPT,
-      "\n\nTransform this user-provided text:\n",
-      text
-    ]);
-
-    const raw = result.response.text();
-    const cleanedRaw = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/, "").trim();
-    const parsed = JSON.parse(cleanedRaw);
-
-    const score = Number(parsed.readabilityScore);
-    if (!Number.isInteger(score) || score < 1 || score > 10 ||
-        typeof parsed.dyslexiaFriendly !== "string" ||
-        typeof parsed.screenReaderScript !== "string" ||
-        typeof parsed.scoreExplanation !== "string") {
-      throw new Error("The AI returned an unexpected response format. Please try again.");
+      return res.status(200).json({
+        readabilityScore: score,
+        scoreExplanation: parsed.scoreExplanation.slice(0, 300),
+        dyslexiaFriendly: parsed.dyslexiaFriendly,
+        screenReaderScript: parsed.screenReaderScript
+      });
+    } catch (error) {
+      lastError = error;
+      console.error(`Model ${modelName} failed:`, error.message);
     }
-
-    return res.status(200).json({
-      readabilityScore: score,
-      scoreExplanation: parsed.scoreExplanation.slice(0, 300),
-      dyslexiaFriendly: parsed.dyslexiaFriendly,
-      screenReaderScript: parsed.screenReaderScript
-    });
-  } catch (error) {
-    console.error("AccessCheck AI error:", error);
-    return res.status(502).json({
-      error: error.message?.includes("unexpected response")
-        ? error.message
-        : `Error details: ${error.message || "Check your API key and try again."}`
-    });
   }
+
+  return res.status(502).json({
+    error: `All models busy right now. Please try again in a moment. (${lastError?.message || ""})`
+  });
 }
