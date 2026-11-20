@@ -1,0 +1,17 @@
+{
+  "name": "accesscheck-ai",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "vercel": "^41.6.2"
+  }
+}
