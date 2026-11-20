@@ -8,8 +8,8 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.21.2",
-    "openai": "^4.71.0"
+    "@google/generative-ai": "^0.24.1",
+    "express": "^4.21.2"
   },
   "devDependencies": {
     "vercel": "^41.6.2"
