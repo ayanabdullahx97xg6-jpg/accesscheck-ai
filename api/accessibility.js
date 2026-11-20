@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 
 const SYSTEM_PROMPT = `You are AccessCheck AI, an accessibility-focused text transformation assistant.
 Return ONLY valid JSON with exactly these keys:
@@ -26,9 +26,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed. Use POST." });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: "Gemini API key is missing. Add GEMINI_API_KEY in your Vercel environment variables." });
+    return res.status(500).json({ error: "OpenAI API key is missing. Add OPENAI_API_KEY in your Vercel environment variables." });
   }
 
   const text = typeof req.body?.text === "string" ? req.body.text.trim() : "";
@@ -40,24 +40,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
-      generationConfig: {
-        temperature: 0.25
-      }
+    const openai = new OpenAI({ apiKey });
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: `Transform this user-provided text:\n${text}` }
+      ],
+      temperature: 0.25
     });
 
-    const result = await model.generateContent([
-      SYSTEM_PROMPT,
-      "\n\nTransform this user-provided text:\n",
-      text
-    ]);
-
-    const raw = result.response.text();
-    // Clean markdown code blocks if the model wraps the JSON response
-    const cleanedRaw = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/, "").trim();
-    const parsed = JSON.parse(cleanedRaw);
+    const raw = completion.choices[0].message.content;
+    const parsed = JSON.parse(raw);
 
     const score = Number(parsed.readabilityScore);
     if (!Number.isInteger(score) || score < 1 || score > 10 ||
@@ -78,7 +74,7 @@ export default async function handler(req, res) {
     return res.status(502).json({
       error: error.message?.includes("unexpected response")
         ? error.message
-        : "We couldn't process this text right now. Check your API key and try again."
+        : "We couldn't process this text right now. Check your OpenAI API key and try again."
     });
   }
 }
