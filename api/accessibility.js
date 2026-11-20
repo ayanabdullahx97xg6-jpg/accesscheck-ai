@@ -42,9 +42,8 @@ export default async function handler(req, res) {
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
+      model: "gemini-1.5-flash",
       generationConfig: {
-        responseMimeType: "application/json",
         temperature: 0.25
       }
     });
@@ -56,7 +55,9 @@ export default async function handler(req, res) {
     ]);
 
     const raw = result.response.text();
-    const parsed = JSON.parse(raw);
+    // Clean markdown code blocks if the model wraps the JSON response
+    const cleanedRaw = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/, "").trim();
+    const parsed = JSON.parse(cleanedRaw);
 
     const score = Number(parsed.readabilityScore);
     if (!Number.isInteger(score) || score < 1 || score > 10 ||
