@@ -40,7 +40,7 @@ export default async function handler(req, res) {
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const modelsToTry = ["gemini-2.0-flash", "gemini-3.8-flash", "gemini-2.0-flash-lite"];
+  const modelsToTry = ["gemini-2.0-flash", "gemini-3.8-flash", "gemini-3.5-flash-lite"];
   let lastError = null;
 
   for (const modelName of modelsToTry) {
