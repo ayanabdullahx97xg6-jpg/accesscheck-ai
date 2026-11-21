@@ -1,36 +1,36 @@
 # AccessCheck AI
 
-A two-page accessibility web app for the STEM2Connect AI Hackathon 2026 — Community Impact Track.
+**Make Every Word Accessible to Everyone.**
 
-## Features
-- Landing page at `/`
-- Tool page at `/tool`
-- Gemini-powered readability estimate, dyslexia-friendly rewrite, and screen-reader script
-- Cream / white reading background toggle
-- Browser Text-to-Speech play / stop
-- Copy buttons for each output
-- Responsive black-and-white interface
+AccessCheck AI is a lightweight, minimalist web application built for the **STEM2Connect AI Hackathon 2026 (Community Impact Track)**. It helps students, parents, and community members easily understand complex school notices, circulars, and dense announcements without losing critical dates, deadlines, or instructions.
 
-## Run locally
-1. Install Node.js (18+ recommended).
-2. Open this folder in a terminal.
-3. Run `npm install`.
-4. Copy `.env.example` to `.env` and add your Gemini API key:
-   `GEMINI_API_KEY=your_key_here`
-5. Run `npm run dev` and open the local URL printed by Vercel.
+---
 
-## Deploy to Vercel
-1. Push this project to a GitHub repository.
-2. Import that repository in Vercel.
-3. In Vercel → Project → Settings → Environment Variables, add:
-   - Name: `GEMINI_API_KEY`
-   - Value: your Gemini API key
-   - Environments: Production, Preview, Development
-4. Redeploy the project.
+## 🌟 Features
 
-The API key is read only by the serverless function and is not included in browser code. Never commit `.env` or paste your API key into public source files.
+* **AI-Powered Simplification:** Transforms complicated, formal paragraphs into clear, easy-to-digest information while strictly preserving important details like dates, times, and requirements.
+* **Readability Score (1–10):** Provides an instant AI-estimated score and brief explanation showing how approachable the original text is.
+* **Dyslexia-Friendly Reading Mode:** Formats simplified text with shorter paragraphs, highlighted keywords, and a **Crisp White / Soft Cream** background toggle to reduce visual stress.
+* **Screen-Reader Script & Audio Playback:** Generates a natural, conversational script and utilizes browser `SpeechSynthesis` so users can listen to notices hands-free.
 
-## Notes
-- The readability score is an AI-generated estimate, not a formal or validated readability metric.
-- Always verify dates, names, deadlines, amounts, and instructions in AI-transformed notices before publishing.
-- If your Google AI Studio account/model access differs, update the model name in `api/accessibility.js`.
+---
+
+## 🛠️ Tech Stack
+
+* **Frontend:** HTML5, CSS3, Vanilla JavaScript
+* **Backend:** Node.js serverless function (`api/accessibility.js`) deployed on Vercel
+* **AI Integration:** Google Gemini API (`gemini-3.5-flash` with multi-model fallback support)
+* **Audio:** Web Speech API (`SpeechSynthesis`)
+
+---
+
+## 🚀 How to Run & Test
+
+### Live Demo
+You can test the live deployed application directly via the Vercel link provided in the project submission. Simply paste any complex school notice (or click **"+ Load sample complex notice"**) and click **Make Accessible**.
+
+### Local Setup
+1. Clone the repository:
+   ```bash
+   git clone <your-repository-url>
+   cd <repository-folder>
